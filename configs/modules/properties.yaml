@@ -1,0 +1,7 @@
+# Configuration for the Nodule Properties module.
+# Computes per-nodule morphometry (volume, centroid, RECIST diameters) and, when
+# a CT is provided, densitometry (mean HU, mass).
+properties:
+  min_size: 5                 # ignore connected components smaller than this (voxels)
+  connectivity: 26            # 6 or 26
+  clip_HU: [-1000.0, 1000.0]  # HU window for mean-HU / mass computation

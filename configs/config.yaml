@@ -1,0 +1,70 @@
+# NoduleFlow single-scan pipeline configuration.
+#
+# Composes the module choices into one end-to-end pipeline:
+#   Detector (detection + classification + optional ensemble)  ->  bounding-box
+#   prompt mask  ->  Segmenter (LesionLocator)  ->  final lesion mask.
+network_weights_dir: 'network_weights'
+
+pipeline:
+  modality: 'box'        # prompt type passed to the segmenter: 'box' or 'point'
+  max_prompts: 5         # keep the top-K detections as prompts (0 = keep all)
+  output_tag: 'pipeline' # suffix of the final mask: {scan}_pipeline.nii.gz
+  bbox_tag: 'BB'         # suffix of the intermediate prompt mask
+  compute_properties: true  # emit a per-nodule properties CSV alongside each mask
+
+properties:
+  min_size: 5              # ignore connected components smaller than this (voxels)
+  connectivity: 26         # 6 or 26
+  clip_HU: [-1000.0, 1000.0]  # HU window for mean-HU / mass
+
+longitudinal:
+  # Candidate propagation strategy across timepoints:
+  #   S0  no propagation           (each timepoint uses only its own candidates)
+  #   S1  from previous times only (timepoint j also gets candidates from i <= j)
+  #   S2  across all times         (timepoint j gets candidates from every i)
+  strategy: 'S1'
+  growth_report: true    # match nodules across timepoints and report growth (S1/S2)
+  plot_growth: true      # render a per-nodule figure (lesion over time) -- master on/off
+  plot_min_timepoints: 2 # only plot nodules present in at least this many timepoints
+  plot_masks: ['pipeline']  # which masks to overlay: 'pipeline' and/or 'reference'
+  plot_3d: true          # add a panel with a 3D reconstruction of the pipeline nodule
+  plot_lung: true        # add a whole-lung locator panel with a dot at the nodule
+  # time_days: {T0: 0, T1: 90, T2: 180}   # optional; enables volume-doubling-time + elapsed-time labels
+
+registration:
+  model: 'unigradicon'    # GradICON universal registration network
+  fixed_time: 'T0'        # reference timepoint; follow-ups register onto it
+  modality: 'ct'
+  finetune_steps: null
+  register_with_mask: true  # if true, ignore masked (lesion) regions when estimating the field
+
+detector:
+  model: 'DLCSD-mD'       # 'DLCSD-mD' or 'LUNA16-mD'
+  max_detections: 250
+  nms_threshold: 0.22
+  score_threshold: 0.5    # drop low-confidence detector boxes
+  output: 'box'           # forced to 'box' by the pipeline (needed to paint prompts)
+
+  classifier:             # false-positive reduction (per-box classifier)
+    enabled: true
+    name: 'resnet50WSPP'
+    weights: 'resnet50WSPP.pt'
+    threshold: 0.0
+
+  ensemble:               # false-positive reduction (merge overlapping boxes)
+    enabled: true
+    touch_counts_as_intersection: true
+
+evaluation:
+  iou_threshold: 0.0      # TP if pred overlaps GT with IoU >= this (0 = any overlap)
+  min_size: 5             # ignore connected components smaller than this (voxels)
+  connectivity: 26        # 6 or 26
+
+segmenter:
+  model: 'lesionlocator'  # available: lesionlocator
+
+lesionlocator:
+  lung_tag: 'lung'
+  nodule_tag: 'LL'        # overridden by pipeline.output_tag at runtime
+  checkpoint: 'network_weights/LesionLocatorCheckpoint'
+  device: 'cuda'

@@ -1,0 +1,13 @@
+# Segmenter configuration — LesionLocator backend.
+#
+# Select the segmentation backend with `segmenter.model`. The backend's own
+# parameters live under its named block below (here: `lesionlocator`), matching
+# configs/baseline/lesionlocator.yaml.
+segmenter:
+  model: 'lesionlocator'      # available: lesionlocator
+
+lesionlocator:
+  lung_tag: 'lung'
+  nodule_tag: 'LL'
+  checkpoint: 'network_weights/LesionLocatorCheckpoint'
+  device: 'cuda'             # 'cuda', 'cpu' or 'mps'

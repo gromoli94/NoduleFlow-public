@@ -1,0 +1,12 @@
+# Configuration for the Classification module (false-positive reduction).
+# ResNet50 (MONAI, 3D) classifier that scores candidate boxes from the Detector.
+#
+# Weight folders live under `network_weights/` relative to the repo root; the
+# runner resolves that directory to an absolute path (see test/test_classifier.py).
+network_weights_dir: 'network_weights'
+
+classifier:
+  name: 'resnet50WSPP'
+  weights: 'resnet50WSPP.pt'
+  patch_size: [64, 64, 64]   # crop size around each box centre
+  threshold: 0.0             # lesion-probability threshold used by the pipeline

@@ -1,0 +1,36 @@
+# NoduleFlow runtime dependencies.
+#
+# nnunetv2 / torch are pinned to versions known to work with the LesionLocator
+# weights; do not unpin casually.
+torch==2.9.0
+torchvision==0.24.0
+nnunetv2==2.6.2
+dynamic-network-architectures==0.4.2
+acvl-utils==0.2.5
+batchgenerators==0.25.1
+batchgeneratorsv2==0.3.0
+nibabel==5.3.2
+numpy==2.3.3
+scipy==1.17.1
+tqdm==4.67.1
+PyYAML==6.0.3
+
+# Segmentation module: LesionLocator (provides the LesionLocator_segment /
+# LesionLocator_create_prompt_json CLIs). natsort is its extra runtime dep.
+natsort==8.4.0
+lesionlocator @ git+https://github.com/MIC-DKFZ/LesionLocator.git
+
+# Detection + classification modules: MONAI RetinaNet + ResNet50-SWS.
+monai==1.5.1
+
+# Transfer module: uniGradICON. Weights auto-download to
+# network_weights/unigradicon1.0/ on first use.
+itk==6.0b1.post1
+footsteps==0.1.9
+icon-registration==1.1.6
+unigradicon==1.0.4
+
+# Nodule properties / growth plots.
+pandas==3.0.5
+matplotlib==3.11.1
+scikit-image==0.26.0

@@ -1,0 +1,26 @@
+# Configuration for the Detector module (lung-nodule detection pipeline).
+#
+# Two stages:
+#   1. RetinaNet detector proposes candidate boxes.
+#   2. Optional ResNet50 classifier (false-positive reduction) rescores them.
+#
+# Weight folders live under `network_weights/` relative to the repo root; the
+# runner resolves that directory to an absolute path (see test/test_detector.py).
+network_weights_dir: 'network_weights'
+
+detector:
+  model: 'DLCSD-mD'          # detection model: 'DLCSD-mD' or 'LUNA16-mD'
+  max_detections: 250        # max boxes returned per scan after NMS
+  nms_threshold: 0.22
+  score_threshold: 0.5       # keep detector boxes with score >= this
+  output: 'box'              # return 'box' (corner voxels) or 'point' (box centre)
+
+  classifier:                # false-positive reduction stage (per-box classifier)
+    enabled: true            # set false to skip classification
+    name: 'resnet50WSPP'
+    weights: 'resnet50WSPP.pt'
+    threshold: 0.0           # keep boxes with classification score >= this
+
+  ensemble:                  # false-positive reduction by merging overlapping boxes
+    enabled: false           # set true to merge spatially overlapping candidates
+    touch_counts_as_intersection: true   # boxes that only touch still merge

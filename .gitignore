@@ -1,0 +1,6 @@
+network_weights/
+test/testResults/
+test/*.nii.gz
+.venv/
+__pycache__/
+*.pyc

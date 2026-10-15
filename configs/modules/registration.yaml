@@ -1,0 +1,16 @@
+# Configuration for the Registration module (uniGradICON / GradICON).
+# Deformably registers moving CTs onto a fixed CT and warps images/masks.
+#
+# Pretrained weights are expected at
+# network_weights/unigradicon1.0/Step_2_final.trch (downloaded automatically on
+# first use if absent). `weights_root` is the repo root that contains that path.
+registration:
+  model: 'unigradicon'      # GradICON universal registration network
+  fixed_time: 'T0'          # timepoint used as the fixed/reference image (moving scans register onto it)
+  modality: 'ct'            # preprocessing modality: 'ct' or 'mri'
+  finetune_steps: null      # instance optimization steps (null = none)
+  register_with_mask: false # if true, ignore masked (lesion) regions when estimating the field
+  # Note: the registration fields (phi_AB moving->fixed and phi_BA fixed->moving)
+  # are always cached to the output folder as .h5. They serve as the
+  # register-if-not-present cache and are reused to propagate candidates, warp
+  # GT, and warp outputs back to own space -- so there is no flag to disable them.
